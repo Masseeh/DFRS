@@ -12,7 +12,6 @@ public class Protocol {
     public static final int TRANSFER_RESERVATION = 5;
 
     public static final int MSG_LENGTH = 1024;
-    public static final int TIME_OUT = 6000;
 
     public static final int MTL = 10;
     public static final int NDL = 11;
@@ -34,9 +33,18 @@ public class Protocol {
     public static final int THIRD_REPLICA_MANAGER = 9990;
 
     public static final int HA_MODE = 1;
-    public static final int BY_MODE = 2;
 
-    public static final int ACTIVE_SERVER = 1;
+    public static final int ACTIVE_SERVER = 2;
+
+    public static final String MTL_0_JAR = "java -jar /Users/masseeh/IdeaProjects/DFRS/out/artifacts/MASIH_jar/DFRS.jar MTL";
+    public static final String NDH_0_JAR = "java -jar /Users/masseeh/IdeaProjects/DFRS/out/artifacts/MASIH_jar/DFRS.jar NDH";
+    public static final String WST_0_JAR = "java -jar /Users/masseeh/IdeaProjects/DFRS/out/artifacts/MASIH_jar/DFRS.jar WST";
+
+    public static final String MTL_1_JAR = "java -jar /Users/masseeh/IdeaProjects/DFRS/out/artifacts/MSADRA_jar/DFRS.jar";
+    public static final String NDH_1_JAR = "java -jar /Users/masseeh/IdeaProjects/DFRS/out/artifacts/NSADRA_jar/DFRS.jar";
+    public static final String WST_1_JAR = "java -jar /Users/masseeh/IdeaProjects/DFRS/out/artifacts/WSADRA_jar/DFRS.jar";
+
+    public static final String RESOUCES = "/Users/masseeh/IdeaProjects/DFRS/resources/";
 
 
 

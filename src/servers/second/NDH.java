@@ -7,6 +7,7 @@ import frontEnd.Protocol;
 import servers.first.ParentServant;
 
 import javax.jws.WebMethod;
+import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.net.*;
@@ -26,8 +27,8 @@ public class NDH extends ParentServant {
     static Map<String, Map<String, ArrayList<String>>> ndhPassengerMap = new HashMap<>();
 
     //Static file assignment for logging
-    static Path fileAddress = Paths.get("/Users/Sadra/IdeaProjects/DFRS_WEBSERVICES/src/Server Logs/NDH_SERVER_LOG.txt");
-    static Path protPath = Paths.get("/resources/ndh1/actions.log");
+    static Path fileAddress = Paths.get(Protocol.RESOUCES + "ndh1/NDH_SERVER_LOG.txt");
+    static Path protPath = Paths.get(Protocol.RESOUCES + "ndh1/actions.log");
     static ArrayList<String> protLines = new ArrayList<>();
     static ArrayList<String> lines = new ArrayList<>();
 
@@ -67,6 +68,13 @@ public class NDH extends ParentServant {
 
     public NDH(int cityPort) {
         super(cityPort);
+        try {
+            File file = new File(Protocol.RESOUCES + "ndh1/NDH_SERVER_LOG.txt");
+            File file1 = new File(Protocol.RESOUCES + "ndh1/actions.log");
+        }
+        catch (Exception e){
+            System.out.println("FAILED TO CREATE!\n"+e);
+        }
     }
 
     //Initial flight data and managers
@@ -1347,7 +1355,9 @@ public class NDH extends ParentServant {
             managerDB();
             //psngrDB();
 
-            NDH ndh = new NDH(Protocol.FIRST_REPLICA_PORT_NDL);
+            NDH ndh = new NDH(Protocol.SECOND_REPLICA_PORT_NDL);
+
+
 
             System.out.println
                     ("NDH Server ready and waiting ...");

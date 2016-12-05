@@ -7,6 +7,7 @@ import frontEnd.Protocol;
 import servers.first.ParentServant;
 
 import javax.jws.WebMethod;
+import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.net.*;
@@ -26,8 +27,8 @@ public class WST extends ParentServant {
     static Map<String, Map<String, ArrayList<String>>> wstPassengerMap = new HashMap<>();
 
     //Static file assignment for logging
-    static Path fileAddress = Paths.get("/Users/Sadra/IdeaProjects/DFRS_WEBSERVICES/src/Server Logs/WST_SERVER_LOG.txt");
-    static Path protPath = Paths.get("/resources/wst1/actions.log");
+    static Path fileAddress = Paths.get(Protocol.RESOUCES + "wst1/WST_SERVER_LOG.txt");
+    static Path protPath = Paths.get(Protocol.RESOUCES + "wst1/actions.log");
     static ArrayList<String> protLines = new ArrayList<>();
     static ArrayList<String> lines = new ArrayList<>();
 
@@ -65,6 +66,13 @@ public class WST extends ParentServant {
 
     public WST(int cityPort) {
         super(cityPort);
+        try {
+            File file = new File(Protocol.RESOUCES + "wst1/WST_SERVER_LOG.txt");
+            File file1 = new File(Protocol.RESOUCES + "wst1/actions.log");
+        }
+        catch (Exception e){
+            System.out.println("FAILED TO CREATE!\n"+e);
+        }
     }
 
     //Initial flight data and managers
@@ -1346,7 +1354,7 @@ public class WST extends ParentServant {
 //            managerDB();
             //psngrDB();
 
-            WST wst = new WST(Protocol.FIRST_REPLICA_PORT_WA);
+            WST wst = new WST(Protocol.SECOND_REPLICA_PORT_WA);
 
             System.out.println
                     ("WST Server ready and waiting ...");

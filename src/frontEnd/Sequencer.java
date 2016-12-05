@@ -8,6 +8,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.InetSocketAddress;
 import java.util.Arrays;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Created by masseeh on 12/2/16.
@@ -17,9 +18,12 @@ public class Sequencer {
     private ReliableServerSocket sequencerSocket;
     private long sequenceNumber = 0;
 
+    private ConcurrentHashMap<Integer,String> history;
+
     private void init() {
         try {
 
+            history = new ConcurrentHashMap<>();
             sequencerSocket = new ReliableServerSocket(Protocol.SEQUENCER_PORT);
             while (true) {
 
@@ -75,20 +79,31 @@ public class Sequencer {
                     break;
             }
 
-            //for(int i=0;i<3;i++){}
-            try {
-                ReliableSocket sendToReplica = new ReliableSocket();
+            for(int i=0;i<Protocol.ACTIVE_SERVER;i++) {
 
-                sendToReplica.connect(new InetSocketAddress("127.0.0.1" , replicaPorts[0]));
+                final int idxPort = i;
 
-                OutputStream out = sendToReplica.getOutputStream();
-                out.write(sendBuffer);
+                new Thread(new Runnable() {
+                    @Override
+                    public void run() {
 
-                out.flush();
-                out.close();
-                sendToReplica.close();
-            } catch (IOException e) {
-                e.printStackTrace();
+                        try {
+                            ReliableSocket sendToReplica = new ReliableSocket();
+
+                            sendToReplica.connect(new InetSocketAddress("127.0.0.1", replicaPorts[idxPort]));
+
+                            OutputStream out = sendToReplica.getOutputStream();
+                            out.write(sendBuffer);
+
+                            out.flush();
+                            out.close();
+                            sendToReplica.close();
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+
+                    }
+                }).start();
             }
         }
 
@@ -107,6 +122,10 @@ public class Sequencer {
                 String[] tokenizer = msg.split(",");
 
                 int city = Integer.valueOf(tokenizer[0]);
+
+                int clientId = Integer.valueOf(tokenizer[2]);
+
+                history.put(clientId, msg);
 
                 String newMsg = Protocol.mergeMsg(Arrays.copyOfRange(tokenizer, 1, tokenizer.length));
 

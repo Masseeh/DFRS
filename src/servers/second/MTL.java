@@ -5,6 +5,7 @@ import servers.first.ParentServant;
 import servers.first.RequestHandler;
 
 import javax.jws.WebMethod;
+import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.net.*;
@@ -25,8 +26,8 @@ public class MTL extends ParentServant{
     private Object lock = new Object();
 
     //Static logging file for the server
-    static Path fileAddress = Paths.get("/Users/Sadra/IdeaProjects/DFRS_WEBSERVICES/src/Server Logs/MTL_SERVER_LOG.txt");
-    static Path protPath = Paths.get("/resources/mtl1/actions.log");
+    static Path fileAddress = Paths.get(Protocol.RESOUCES + "mtl1/MTL_SERVER_LOG.txt");
+    static Path protPath = Paths.get(Protocol.RESOUCES + "mtl1/actions.log");
     static ArrayList<String> lines = new ArrayList<>();
     static ArrayList<String> protLines = new ArrayList<>();
 
@@ -65,6 +66,14 @@ public class MTL extends ParentServant{
 
     public MTL(int cityPort) {
         super(cityPort);
+        try {
+            File file = new File(Protocol.RESOUCES + "mtl1/MTL_SERVER_LOG.txt");
+            File file1 = new File(Protocol.RESOUCES + "mtl1/actions.log");
+        }
+        catch (Exception e){
+            System.out.println("FAILED TO CREATE!\n"+e);
+        }
+
     }
 
     //Initial flight data and managers
@@ -1344,7 +1353,7 @@ public class MTL extends ParentServant{
 //            managerDB();
             //psngrDB();
 
-            ParentServant mtl = new MTL(Protocol.FIRST_REPLICA_PORT_MTL);
+            ParentServant mtl = new MTL(Protocol.SECOND_REPLICA_PORT_MTL);
 
             RequestHandler requestHandler = new RequestHandler(mtl);
 

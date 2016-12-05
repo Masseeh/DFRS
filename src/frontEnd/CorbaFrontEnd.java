@@ -29,8 +29,9 @@ public class CorbaFrontEnd extends FSInterfacePOA {
     private Integer clientId = 0;
     private int mode = Protocol.HA_MODE;
 
-
-
+    public CorbaFrontEnd(int mode) {
+        this.mode = mode;
+    }
 
     @Override
     public int bookFlight(String city, String firsName, String lastName, String address, String phone, String destination, String date, String flightClass) {
@@ -286,10 +287,10 @@ public class CorbaFrontEnd extends FSInterfacePOA {
             case "MTL":
                 res = Protocol.MTL;
                 break;
-            case "NDL":
+            case "NDH":
                 res = Protocol.NDL;
                 break;
-            case "WA":
+            case "WST":
                 res = Protocol.WA;
                 break;
         }
@@ -363,10 +364,13 @@ public class CorbaFrontEnd extends FSInterfacePOA {
 
         switch (id) {
             case 0:
+                port = Protocol.FIRST_REPLICA_MANAGER;
                 break;
             case 1:
+                port = Protocol.SECOND_REPLICA_MANAGER;
                 break;
             case 2:
+                port = Protocol.THIRD_REPLICA_MANAGER;
                 break;
         }
 
@@ -395,13 +399,14 @@ public class CorbaFrontEnd extends FSInterfacePOA {
 
             ORB orb = ORB.init(args, null);
 
+
             // get reference to rootpoa & activate the POAManager
             POA rootpoa =
                     (POA) orb.resolve_initial_references("RootPOA");
             rootpoa.the_POAManager().activate();
 
             // create servant and register it with the ORB
-            CorbaFrontEnd impl = new CorbaFrontEnd();
+            CorbaFrontEnd impl = new CorbaFrontEnd(Integer.valueOf(args[4]));
 
             // get object reference from the servant
             org.omg.CORBA.Object ref =
@@ -509,6 +514,7 @@ public class CorbaFrontEnd extends FSInterfacePOA {
         private Pair pair;
         private int id;
         private String city;
+        private String result;
 
         public ErrorHandler(Pair pair, int id, String city) {
             this.pair = pair;
@@ -517,7 +523,7 @@ public class CorbaFrontEnd extends FSInterfacePOA {
         }
 
         public String readResult() {
-            return "";
+            return result;
         }
 
         @Override
@@ -528,6 +534,8 @@ public class CorbaFrontEnd extends FSInterfacePOA {
                 pair.semaphore.acquire();
 
                 ArrayList<String> results = pair.entry.get(id);
+
+                results.add(results.get(0));
 
                 int size = results.size();
 
@@ -545,8 +553,9 @@ public class CorbaFrontEnd extends FSInterfacePOA {
 
                             reportError(id , city);
 
-
                         }
+
+                        result = p0;
 
 
                     }
@@ -560,6 +569,8 @@ public class CorbaFrontEnd extends FSInterfacePOA {
 
                         }
 
+                        result = p0;
+
                     }
                     else if (p1.equals(p2)) {
 
@@ -570,6 +581,8 @@ public class CorbaFrontEnd extends FSInterfacePOA {
                             reportError(id , city);
 
                         }
+
+                        result = p1;
 
                     }
                 }

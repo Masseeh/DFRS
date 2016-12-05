@@ -1,5 +1,6 @@
 package servers.first;
 import frontEnd.Protocol;
+import servers.ReplicaManager;
 
 import java.io.FileNotFoundException;
 import java.io.FileReader;
@@ -30,6 +31,7 @@ public class FSServant extends ParentServant{
 
     flights = new MyHashMap<>();
     passengers = new MyHashMap<>();
+
     initLoggingSystem();
   }
 
@@ -38,7 +40,7 @@ public class FSServant extends ParentServant{
     actionLogger.setLevel(Level.ALL);
     FileHandler aFileHandler;
     try {
-      aFileHandler = new FileHandler("resources/" + cityOrigin.toLowerCase() + ReplicaManager.ID
+      aFileHandler = new FileHandler(Protocol.RESOUCES + cityOrigin.toLowerCase() + ReplicaManager.ID
               + "/actions.log", true);
       aFileHandler.setFormatter(new SimpleFormatter());
       actionLogger.addHandler(aFileHandler);
@@ -49,7 +51,7 @@ public class FSServant extends ParentServant{
     generalLogger.setLevel(Level.ALL);
     FileHandler uFileHandler;
     try {
-      uFileHandler = new FileHandler("resources/" + cityOrigin.toLowerCase() + ReplicaManager.ID
+      uFileHandler = new FileHandler(Protocol.RESOUCES + cityOrigin.toLowerCase() + ReplicaManager.ID
               + "/general.log", true);
       uFileHandler.setFormatter(new SimpleFormatter());
       generalLogger.addHandler(uFileHandler);
@@ -77,7 +79,7 @@ public class FSServant extends ParentServant{
 
       ArrayList<String> res = new ArrayList<>();
 
-      for(int i = 0; i< ReplicaManager.NUMBER; i++) {
+      for(int i = 0; i< Status.NUMBER; i++) {
         if (ports[i] != countPort) {
           final int idx = i;
           Thread t = new Thread(new Runnable() {
@@ -106,11 +108,11 @@ public class FSServant extends ParentServant{
         }
       }
 
-      for (int i = 0; i < ReplicaManager.NUMBER-1; i++) {
+      for (int i = 0; i < Status.NUMBER-1; i++) {
         serversRequest.get(i).join();
       }
 
-      for (int i = 0; i < ReplicaManager.NUMBER-1; i++) {
+      for (int i = 0; i < Status.NUMBER-1; i++) {
         result += res.get(i);
         result += " - ";
       }
@@ -335,7 +337,7 @@ public class FSServant extends ParentServant{
       try {
         InetAddress ip = InetAddress.getByName("localhost");
         DatagramSocket datagramSocket = new DatagramSocket();
-        DatagramPacket request = new DatagramPacket(data.toString().getBytes(), data.length(), ip, ReplicaManager.transferPorts.get(otherCity));
+        DatagramPacket request = new DatagramPacket(data.toString().getBytes(), data.length(), ip, Status.transferPorts.get(otherCity));
         datagramSocket.send(request);
 
         DatagramPacket response = new DatagramPacket(tampReceive, tampReceive.length);
@@ -423,19 +425,26 @@ public class FSServant extends ParentServant{
 
     String trans = "";
 
+    int port = 0;
+
     switch (args[0]) {
       case "MTL" :
         trans = "montreal";
+        port = Protocol.FIRST_REPLICA_PORT_MTL;
         break;
-      case "WA" :
+      case "NDH" :
         trans = "washington";
+        port = Protocol.FIRST_REPLICA_PORT_WA;
         break;
-      case "NDL" :
+      case "WST" :
+        port = Protocol.FIRST_REPLICA_PORT_NDL;
         trans = "new delhi";
         break;
     }
 
-    FSServant fsServant = new FSServant(ReplicaManager.flightCountPorts.get(args[0]), ReplicaManager.transferPorts.get(trans), Protocol.FIRST_REPLICA_PORT_MTL, args[0]);
+    System.out.println(Status.flightCountPorts.get(args[0]));
+
+    FSServant fsServant = new FSServant(Status.flightCountPorts.get(args[0]), Status.transferPorts.get(trans), port, args[0]);
 
 //    fsServant.populate(args[0]);
 

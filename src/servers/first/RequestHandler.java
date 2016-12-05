@@ -3,11 +3,13 @@ package servers.first;
 import frontEnd.Protocol;
 import net.rudp.ReliableServerSocket;
 import net.rudp.ReliableSocket;
+import servers.ReplicaManager;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.InetSocketAddress;
+import java.util.Arrays;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
@@ -138,27 +140,36 @@ public class RequestHandler {
 
                 String[] tokenizer = msg.split(",");
 
-                int seq = Integer.valueOf(tokenizer[0]);
+                if (tokenizer[0].equals("R")) {
 
-                synchronized (lock) {
-                    if (seq == sequenceNumber) {
-                        sequenceNumber++;
-                        isAllowed = true;
+                    String inv = Protocol.mergeMsg(Arrays.copyOfRange(tokenizer,1,tokenizer.length));
+                    invoke(inv);
 
-                    } else {
-                        holdBack.put(seq, msg);
-                        isAllowed = false;
-                    }
                 }
+                else {
 
-                if (isAllowed) {
-                    byte[] bytes = invoke(msg);
-                    sendResult(bytes);
-                    while (holdBack.contains(sequenceNumber)) {
-                        String s = holdBack.remove(sequenceNumber);
-                        byte[] b = invoke(s);
-                        sendResult(b);
-                        sequenceNumber++;
+                    int seq = Integer.valueOf(tokenizer[0]);
+
+                    synchronized (lock) {
+                        if (seq == sequenceNumber) {
+                            sequenceNumber++;
+                            isAllowed = true;
+
+                        } else {
+                            holdBack.put(seq, msg);
+                            isAllowed = false;
+                        }
+                    }
+
+                    if (isAllowed) {
+                        byte[] bytes = invoke(msg);
+                        sendResult(bytes);
+                        while (holdBack.contains(sequenceNumber)) {
+                            String s = holdBack.remove(sequenceNumber);
+                            byte[] b = invoke(s);
+                            sendResult(b);
+                            sequenceNumber++;
+                        }
                     }
                 }
 
