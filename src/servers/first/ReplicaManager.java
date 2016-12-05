@@ -23,6 +23,7 @@ public class ReplicaManager {
     public ReplicaManager(int replicaManagerPort) {
         this.replicaManagerPort = replicaManagerPort;
         errors = new int[3];
+        ID++;
     }
 
     static
@@ -87,18 +88,16 @@ public class ReplicaManager {
                 in.close();
                 socket.close();
 
-                String msg = new String(buffer,0, size);
-
-                int city = Integer.valueOf(msg);
+                String city = new String(buffer,0, size);
 
                 switch (city) {
-                    case Protocol.MTL:
+                    case "MTL":
                         errors[0]++;
                         break;
-                    case Protocol.NDL:
+                    case "NDL":
                         errors[1]++;
                         break;
-                    case Protocol.WA:
+                    case "WA":
                         errors[2]++;
                         break;
                 }

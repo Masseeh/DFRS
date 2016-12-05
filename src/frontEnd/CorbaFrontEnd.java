@@ -17,6 +17,7 @@ import java.io.OutputStream;
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.Semaphore;
 
 /**
  * Created by masseeh on 12/2/16.
@@ -27,6 +28,8 @@ public class CorbaFrontEnd extends FSInterfacePOA {
     private Object lock = new Object();
     private Integer clientId = 0;
     private int mode = Protocol.HA_MODE;
+
+
 
 
     @Override
@@ -58,7 +61,7 @@ public class CorbaFrontEnd extends FSInterfacePOA {
 
             clean(socket);
 
-            String r = afterTimeOut(Protocol.BOOK_FLIGHT, localId, pair);
+            String r = afterTimeOut(city, localId, pair);
             if (!r.equals("")) {
                 return Integer.valueOf(r);
             }
@@ -98,7 +101,7 @@ public class CorbaFrontEnd extends FSInterfacePOA {
             clean(socket);
 
 
-            String r = afterTimeOut(Protocol.GET_BOOKED_FLIGHT_COUNT, localId, pair);
+            String r = afterTimeOut(city, localId, pair);
             if (!r.equals("")) {
                 return r;
             }
@@ -139,7 +142,7 @@ public class CorbaFrontEnd extends FSInterfacePOA {
             clean(socket);
 
 
-            String r = afterTimeOut(Protocol.EDIT_RECORD, localId, pair);
+            String r = afterTimeOut(city, localId, pair);
             if (!r.equals("")) {
                 return Integer.valueOf(r);
             }
@@ -181,7 +184,7 @@ public class CorbaFrontEnd extends FSInterfacePOA {
             clean(socket);
 
 
-            String r = afterTimeOut(Protocol.ADD_FLIGHT, localId, pair);
+            String r = afterTimeOut(city, localId, pair);
             if (!r.equals("")) {
                 return Integer.valueOf(r);
             }
@@ -222,7 +225,7 @@ public class CorbaFrontEnd extends FSInterfacePOA {
             clean(socket);
 
 
-            String r = afterTimeOut(Protocol.REMOVE_FLIGHT, localId, pair);
+            String r = afterTimeOut(city, localId, pair);
             if (!r.equals("")) {
                 return Integer.valueOf(r);
             }
@@ -264,7 +267,7 @@ public class CorbaFrontEnd extends FSInterfacePOA {
             clean(socket);
 
 
-            String r = afterTimeOut(Protocol.TRANSFER_RESERVATION, localId, pair);
+            String r = afterTimeOut(city, localId, pair);
             if (!r.equals("")) {
                 return Integer.valueOf(r);
             }
@@ -304,7 +307,7 @@ public class CorbaFrontEnd extends FSInterfacePOA {
         socket.close();
     }
 
-    private String afterTimeOut(int method, int id, Pair pair) {
+    private String afterTimeOut(String city, int id, Pair pair) {
 
         String f = "";
 
@@ -330,12 +333,12 @@ public class CorbaFrontEnd extends FSInterfacePOA {
                 }
             }
 
-            ErrorHandler res = new ErrorHandler(pair, id);
+            ErrorHandler res = new ErrorHandler(pair, id, city);
             res.start();
         }
 
         else {
-            ErrorHandler res = new ErrorHandler(pair, id);
+            ErrorHandler res = new ErrorHandler(pair, id, city);
             res.start();
 
             try {
@@ -352,6 +355,39 @@ public class CorbaFrontEnd extends FSInterfacePOA {
         }
 
         return f;
+    }
+
+    private void reportError(int id, String city) {
+
+        int port = 0;
+
+        switch (id) {
+            case 0:
+                break;
+            case 1:
+                break;
+            case 2:
+                break;
+        }
+
+        try {
+            ReliableSocket socket = new ReliableSocket();
+            socket.connect(new InetSocketAddress("127.0.0.1", port));
+
+            OutputStream out = socket.getOutputStream();
+
+            out.write(city.getBytes());
+
+            out.flush();
+            out.close();
+            socket.close();
+
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+
     }
 
     public static void main(String[] args) {
@@ -454,6 +490,8 @@ public class CorbaFrontEnd extends FSInterfacePOA {
                     holdBack.put(method, msges);
                 }
 
+                msges.semaphore.release();
+
                 synchronized (msges) {
                     msges.notify();
                 }
@@ -470,10 +508,12 @@ public class CorbaFrontEnd extends FSInterfacePOA {
 
         private Pair pair;
         private int id;
+        private String city;
 
-        public ErrorHandler(Pair pair, int id) {
+        public ErrorHandler(Pair pair, int id, String city) {
             this.pair = pair;
             this.id = id;
+            this.city = city;
         }
 
         public String readResult() {
@@ -484,25 +524,54 @@ public class CorbaFrontEnd extends FSInterfacePOA {
         public void run() {
 
             try {
-                Thread.sleep(Protocol.TIME_OUT);
+
+                pair.semaphore.acquire();
 
                 ArrayList<String> results = pair.entry.get(id);
 
                 int size = results.size();
 
-//                synchronized (results) {
-//
-//                    for (int i = 0; i <) {
-//
-//                    }
-//
-//                }
-
                 if (size > 0) {
 
-                    String p = results.get(0);
-                    String[] s = p.split(",");
+                    String p0 = results.get(0).split(",")[0];
+                    String p1 = results.get(1).split(",")[0];
+                    String p2 = results.get(2).split(",")[0];
 
+                    if (p0.equals(p1)) {
+
+                        if (!p0.equals(p2)) {
+
+                            int id = Integer.valueOf(results.get(2).split(",")[1]);
+
+                            reportError(id , city);
+
+
+                        }
+
+
+                    }
+                    else if (p0.equals(p2)){
+
+                        if (!p0.equals(p1)) {
+
+                            int id = Integer.valueOf(results.get(1).split(",")[1]);
+
+                            reportError(id , city);
+
+                        }
+
+                    }
+                    else if (p1.equals(p2)) {
+
+                        if (!p1.equals(p0)) {
+
+                            int id = Integer.valueOf(results.get(0).split(",")[1]);
+
+                            reportError(id , city);
+
+                        }
+
+                    }
                 }
 
 
@@ -517,8 +586,10 @@ public class CorbaFrontEnd extends FSInterfacePOA {
     class Pair {
 
         public ConcurrentHashMap<Integer, ArrayList<String>> entry;
+        public Semaphore semaphore;
 
         public Pair(int id) {
+            semaphore = new Semaphore(-Protocol.ACTIVE_SERVER);
             entry = new ConcurrentHashMap<>();
             ArrayList<String> msg = new ArrayList<>();
             entry.put(id , msg);

@@ -36,6 +36,8 @@ public class Protocol {
     public static final int HA_MODE = 1;
     public static final int BY_MODE = 2;
 
+    public static final int ACTIVE_SERVER = 1;
+
 
 
 
