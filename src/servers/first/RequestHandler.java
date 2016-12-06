@@ -51,6 +51,40 @@ public class RequestHandler {
         }
     }
 
+    public void invokeForRestore(String msg) {
+
+        String[] tokenizer = msg.split(",");
+
+        int method = Integer.valueOf(tokenizer[0]);
+
+        switch (method) {
+            case Protocol.BOOK_FLIGHT :
+                servant.bookFlight(tokenizer[1], tokenizer[2], tokenizer[3], tokenizer[4], tokenizer[5], tokenizer[6], tokenizer[7]);
+
+                break;
+            case Protocol.GET_BOOKED_FLIGHT_COUNT :
+                servant.getBookedFlightCount();
+
+                break;
+            case Protocol.EDIT_RECORD :
+                servant.editRecord(tokenizer[1], tokenizer[2], tokenizer[3]);
+
+                break;
+            case Protocol.ADD_FLIGHT :
+                servant.addFlight(tokenizer[1], tokenizer[2], tokenizer[3], tokenizer[4], tokenizer[5]);
+
+                break;
+            case Protocol.REMOVE_FLIGHT :
+                servant.removeFlight(tokenizer[1]);
+
+                break;
+            case Protocol.TRANSFER_RESERVATION :
+                servant.transferReservation(tokenizer[1], tokenizer[2], tokenizer[3]);
+                break;
+        }
+
+    }
+
     public byte[] invoke(String msg) {
 
         String[] tokenizer = msg.split(",");
@@ -143,7 +177,7 @@ public class RequestHandler {
                 if (tokenizer[0].equals("R")) {
 
                     String inv = Protocol.mergeMsg(Arrays.copyOfRange(tokenizer,1,tokenizer.length));
-                    invoke(inv);
+                    invokeForRestore(inv);
 
                 }
                 else {

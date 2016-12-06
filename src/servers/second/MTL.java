@@ -26,10 +26,12 @@ public class MTL extends ParentServant{
     private Object lock = new Object();
 
     //Static logging file for the server
-    static Path fileAddress = Paths.get(Protocol.RESOUCES + "mtl1/MTL_SERVER_LOG.txt");
-    static Path protPath = Paths.get(Protocol.RESOUCES + "mtl1/actions.log");
+    static Path fileAddress = Paths.get(Protocol.RESOURCES + "mtl1/MTL_SERVER_LOG.txt");
+    static Path protPath = Paths.get(Protocol.RESOURCES + "mtl1/actions.log");
     static ArrayList<String> lines = new ArrayList<>();
     static ArrayList<String> protLines = new ArrayList<>();
+    static int flightId = 0;
+    static int clientId = 0;
 
     //Alphabetic hash maps for Passengers
     static Map<String, ArrayList<String>> mapVal = new HashMap<>();
@@ -67,8 +69,8 @@ public class MTL extends ParentServant{
     public MTL(int cityPort) {
         super(cityPort);
         try {
-            File file = new File(Protocol.RESOUCES + "mtl1/MTL_SERVER_LOG.txt");
-            File file1 = new File(Protocol.RESOUCES + "mtl1/actions.log");
+            File file = new File(Protocol.RESOURCES + "mtl1/MTL_SERVER_LOG.txt");
+            File file1 = new File(Protocol.RESOURCES + "mtl1/actions.log");
         }
         catch (Exception e){
             System.out.println("FAILED TO CREATE!\n"+e);
@@ -240,6 +242,37 @@ public class MTL extends ParentServant{
     @WebMethod
     public int transferReservation(String recordID, String currentCity, String otherCity){
 
+        String a1 = "";
+        String b1 = "";
+
+        switch (currentCity) {
+            case "montreal" :
+                a1 = "MTL";
+                break;
+            case "washington" :
+                a1 = "WST";
+                break;
+            case "new delhi" :
+                a1 = "NDH";
+                break;
+        }
+
+        currentCity = a1;
+
+        switch (otherCity) {
+            case "montreal" :
+                b1 = "MTL";
+                break;
+            case "washington" :
+                b1 = "WST";
+                break;
+            case "new delhi" :
+                b1 = "NDH";
+                break;
+        }
+
+        otherCity = b1;
+
         synchronized (lock) {
             protLines.add(Protocol.createLogMsg(Protocol.TRANSFER_RESERVATION, recordID, currentCity, otherCity)+"\n");
             try {
@@ -249,8 +282,6 @@ public class MTL extends ParentServant{
             }
 
         }
-
-        Protocol.createLogMsg(Protocol.TRANSFER_RESERVATION, recordID, currentCity, otherCity);
 
         int isDone = -1;
         if (mapVal.containsKey(recordID)) {
@@ -356,7 +387,8 @@ public class MTL extends ParentServant{
         }
 
         int result;
-        String uniqueID = UUID.randomUUID().toString().substring(0, 5);
+        String uniqueID = flightId + "";
+        flightId++;
         ArrayList<String> flightData = new ArrayList<>();
         flightData.add(departure);
         flightData.add(destination);
@@ -430,7 +462,8 @@ public class MTL extends ParentServant{
 
         ArrayList<String> mtlPassengerList = new ArrayList<>();
         String mainKey = lastName.substring(0,1).toUpperCase();
-        String uniqueID = UUID.randomUUID().toString().substring(0, 5);
+        String uniqueID = clientId + "";
+        clientId++;
         String result = "";
         int r = -1;
 

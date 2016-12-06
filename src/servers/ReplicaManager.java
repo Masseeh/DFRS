@@ -6,7 +6,6 @@ import net.rudp.ReliableSocket;
 
 import java.io.*;
 import java.net.InetSocketAddress;
-import java.util.HashMap;
 
 /**
  * Created by masseeh on 11/1/16.
@@ -33,14 +32,14 @@ public class ReplicaManager {
 
         replicaManager.initProcesses();
 
-        replicaManager.listen();
+        replicaManager.restartReplica(0);
 
-        replicaManager.dump(replicaManager.mtlReplica);
+        replicaManager.listen();
 
 
     }
 
-    public void dump(Process p) {
+    public void dump(Process p , String server) {
         try {
 
             BufferedReader stdInput = new BufferedReader(new
@@ -49,13 +48,13 @@ public class ReplicaManager {
             BufferedReader stdError = new BufferedReader(new
                     InputStreamReader(p.getErrorStream()));
 
-            System.out.println("Here is the standard output of the command:\n");
+            System.out.println("Here is the standard output of the command " + server + " ");
             String s = null;
             while ((s = stdInput.readLine()) != null) {
                 System.out.println(s);
             }
 
-            System.out.println("Here is the standard error of the command (if any):\n");
+            System.out.println("Here is the standard error of the command (if any) " + server + " :");
             while ((s = stdError.readLine()) != null) {
                 System.out.println(s);
             }
@@ -153,7 +152,7 @@ public class ReplicaManager {
             e.printStackTrace();
         }
 
-        String address = Protocol.RESOUCES + city + ID + "/actions.log";
+        String address = Protocol.RESOURCES + city + ID + "/actions.log";
 
         if (ID == 0) {
 
@@ -188,7 +187,7 @@ public class ReplicaManager {
 
                         line = line.substring(7);
 
-                        line += "R," + line;
+                        line = "R," + line;
 
                         out.write(line.getBytes());
                         out.flush();
@@ -234,13 +233,15 @@ public class ReplicaManager {
                 OutputStream out = socket.getOutputStream();
 
                 while (line != null) {
+                    if (line != "\n") {
 
-                    line += "R," + line;
+                        line = "R," + line;
 
-                    out.write(line.getBytes());
-                    out.flush();
+                        out.write(line.getBytes());
+                        out.flush();
 
-                    line = bf.readLine();
+                        line = bf.readLine();
+                    }
                 }
 
                 out.close();

@@ -5,6 +5,7 @@ package servers.second; /**
 
 import frontEnd.Protocol;
 import servers.first.ParentServant;
+import servers.first.RequestHandler;
 
 import javax.jws.WebMethod;
 import java.io.File;
@@ -27,10 +28,13 @@ public class NDH extends ParentServant {
     static Map<String, Map<String, ArrayList<String>>> ndhPassengerMap = new HashMap<>();
 
     //Static file assignment for logging
-    static Path fileAddress = Paths.get(Protocol.RESOUCES + "ndh1/NDH_SERVER_LOG.txt");
-    static Path protPath = Paths.get(Protocol.RESOUCES + "ndh1/actions.log");
+    static Path fileAddress = Paths.get(Protocol.RESOURCES + "ndh1/NDH_SERVER_LOG.txt");
+    static Path protPath = Paths.get(Protocol.RESOURCES + "ndh1/actions.log");
     static ArrayList<String> protLines = new ArrayList<>();
     static ArrayList<String> lines = new ArrayList<>();
+
+    static int flightId = 0;
+    static int clientId = 0;
 
     Object lock = new Object();
 
@@ -69,8 +73,8 @@ public class NDH extends ParentServant {
     public NDH(int cityPort) {
         super(cityPort);
         try {
-            File file = new File(Protocol.RESOUCES + "ndh1/NDH_SERVER_LOG.txt");
-            File file1 = new File(Protocol.RESOUCES + "ndh1/actions.log");
+            File file = new File(Protocol.RESOURCES + "ndh1/NDH_SERVER_LOG.txt");
+            File file1 = new File(Protocol.RESOURCES + "ndh1/actions.log");
         }
         catch (Exception e){
             System.out.println("FAILED TO CREATE!\n"+e);
@@ -273,7 +277,8 @@ public class NDH extends ParentServant {
         }
 
         String result;
-        String uniqueID = UUID.randomUUID().toString().substring(0, 5);
+        String uniqueID = flightId + "";
+        flightId++;
         ArrayList<String> flightData = new ArrayList<>();
         flightData.add(departure);
         flightData.add(destination);
@@ -314,6 +319,38 @@ public class NDH extends ParentServant {
                 e.printStackTrace();
             }
         }
+
+        String a1 = "";
+        String b1 = "";
+
+        switch (currentCity) {
+            case "montreal" :
+                a1 = "MTL";
+                break;
+            case "washington" :
+                a1 = "WST";
+                break;
+            case "new delhi" :
+                a1 = "NDH";
+                break;
+        }
+
+        currentCity = a1;
+
+        switch (otherCity) {
+            case "montreal" :
+                b1 = "MTL";
+                break;
+            case "washington" :
+                b1 = "WST";
+                break;
+            case "new delhi" :
+                b1 = "NDH";
+                break;
+        }
+
+        otherCity = b1;
+
 
         int isDone = -1;
         if (mapVal.containsKey(recordID)) {
@@ -437,7 +474,8 @@ public class NDH extends ParentServant {
         int r;
         ArrayList<String> ndhPassengerList = new ArrayList<>();
         String mainKey = lastName.substring(0,1).toUpperCase();
-        String uniqueID = UUID.randomUUID().toString().substring(0, 5);
+        String uniqueID = clientId + "";
+        clientId++;
 
         ndhPassengerList.add(firstName);
         ndhPassengerList.add(lastName);
@@ -1355,7 +1393,9 @@ public class NDH extends ParentServant {
             managerDB();
             //psngrDB();
 
-            NDH ndh = new NDH(Protocol.SECOND_REPLICA_PORT_NDL);
+            ParentServant ndh = new NDH(Protocol.SECOND_REPLICA_PORT_NDL);
+
+            RequestHandler requestHandler = new RequestHandler(ndh);
 
 
 
@@ -1426,6 +1466,8 @@ public class NDH extends ParentServant {
 
                 }
             }).start();
+
+            requestHandler.listen();
         }
 
         catch (Exception e) {

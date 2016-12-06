@@ -5,6 +5,7 @@ package servers.second; /**
 
 import frontEnd.Protocol;
 import servers.first.ParentServant;
+import servers.first.RequestHandler;
 
 import javax.jws.WebMethod;
 import java.io.File;
@@ -27,10 +28,13 @@ public class WST extends ParentServant {
     static Map<String, Map<String, ArrayList<String>>> wstPassengerMap = new HashMap<>();
 
     //Static file assignment for logging
-    static Path fileAddress = Paths.get(Protocol.RESOUCES + "wst1/WST_SERVER_LOG.txt");
-    static Path protPath = Paths.get(Protocol.RESOUCES + "wst1/actions.log");
+    static Path fileAddress = Paths.get(Protocol.RESOURCES + "wst1/WST_SERVER_LOG.txt");
+    static Path protPath = Paths.get(Protocol.RESOURCES + "wst1/actions.log");
     static ArrayList<String> protLines = new ArrayList<>();
     static ArrayList<String> lines = new ArrayList<>();
+
+    static int flightId = 0;
+    static int clientId = 0;
 
     //Alphabetic hash maps for Passengers
     static Map<String, ArrayList<String>> mapVal = new HashMap<>();
@@ -67,8 +71,8 @@ public class WST extends ParentServant {
     public WST(int cityPort) {
         super(cityPort);
         try {
-            File file = new File(Protocol.RESOUCES + "wst1/WST_SERVER_LOG.txt");
-            File file1 = new File(Protocol.RESOUCES + "wst1/actions.log");
+            File file = new File(Protocol.RESOURCES + "wst1/WST_SERVER_LOG.txt");
+            File file1 = new File(Protocol.RESOURCES + "wst1/actions.log");
         }
         catch (Exception e){
             System.out.println("FAILED TO CREATE!\n"+e);
@@ -259,6 +263,38 @@ public class WST extends ParentServant {
             }
         }
 
+        String a1 = "";
+        String b1 = "";
+
+        switch (currentCity) {
+            case "montreal" :
+                a1 = "MTL";
+                break;
+            case "washington" :
+                a1 = "WST";
+                break;
+            case "new delhi" :
+                a1 = "NDH";
+                break;
+        }
+
+        currentCity = a1;
+
+        switch (otherCity) {
+            case "montreal" :
+                b1 = "MTL";
+                break;
+            case "washington" :
+                b1 = "WST";
+                break;
+            case "new delhi" :
+                b1 = "NDH";
+                break;
+        }
+
+        otherCity = b1;
+
+
         int isDone = -1;
         if (mapVal.containsKey(recordID)) {
             StringBuilder sendData = new StringBuilder();
@@ -362,7 +398,8 @@ public class WST extends ParentServant {
             }
         }
 
-        String uniqueID = UUID.randomUUID().toString().substring(0, 5);
+        String uniqueID = flightId + "";
+        flightId++;
         String result;
         ArrayList<String> flightData = new ArrayList<>();
         flightData.add(departure);
@@ -436,7 +473,8 @@ public class WST extends ParentServant {
 
         ArrayList<String> wstPassengerList = new ArrayList<>();
         String mainKey = lastName.substring(0, 1).toUpperCase();
-        String uniqueID = UUID.randomUUID().toString().substring(0, 5);
+        String uniqueID = clientId + "";
+        clientId++;
         String result = "";
 
         wstPassengerList.add(firstName);
@@ -1354,7 +1392,9 @@ public class WST extends ParentServant {
 //            managerDB();
             //psngrDB();
 
-            WST wst = new WST(Protocol.SECOND_REPLICA_PORT_WA);
+            ParentServant wst = new WST(Protocol.SECOND_REPLICA_PORT_WA);
+
+            RequestHandler requestHandler = new RequestHandler(wst);
 
             System.out.println
                     ("WST Server ready and waiting ...");
@@ -1421,6 +1461,8 @@ public class WST extends ParentServant {
 
                 }
             }).start();
+
+            requestHandler.listen();
 
             // wait for invocations from clients
         } catch (Exception e) {

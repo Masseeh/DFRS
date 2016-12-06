@@ -28,6 +28,10 @@ public class Protocol {
     public static final int SECOND_REPLICA_PORT_NDL = 9994;
     public static final int SECOND_REPLICA_PORT_WA = 9993;
 
+    public static final int THIRD_REPLICA_PORT_MTL = 9915;
+    public static final int THIRD_REPLICA_PORT_NDL = 9914;
+    public static final int THIRD_REPLICA_PORT_WA = 9913;
+
     public static final int FIRST_REPLICA_MANAGER = 9992;
     public static final int SECOND_REPLICA_MANAGER = 9991;
     public static final int THIRD_REPLICA_MANAGER = 9990;
@@ -44,7 +48,7 @@ public class Protocol {
     public static final String NDH_1_JAR = "java -jar /Users/masseeh/IdeaProjects/DFRS/out/artifacts/NSADRA_jar/DFRS.jar";
     public static final String WST_1_JAR = "java -jar /Users/masseeh/IdeaProjects/DFRS/out/artifacts/WSADRA_jar/DFRS.jar";
 
-    public static final String RESOUCES = "/Users/masseeh/IdeaProjects/DFRS/resources/";
+    public static final String RESOURCES = "/Users/masseeh/IdeaProjects/DFRS/resources/";
 
 
 

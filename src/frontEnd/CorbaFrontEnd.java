@@ -18,6 +18,7 @@ import java.net.InetSocketAddress;
 import java.util.ArrayList;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Semaphore;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Created by masseeh on 12/2/16.
@@ -319,6 +320,8 @@ public class CorbaFrontEnd extends FSInterfacePOA {
 
                     pair.wait();
 
+                    System.out.println("Results are ready for HA");
+
                     ArrayList<String> results = pair.entry.get(id);
 
                     int size = results.size();
@@ -327,6 +330,9 @@ public class CorbaFrontEnd extends FSInterfacePOA {
                         String p = results.get(0);
                         String[] s = p.split(",");
                         f = s[0];
+
+                        System.out.println(f);
+
                     }
 
                 } catch (InterruptedException e) {
@@ -342,11 +348,16 @@ public class CorbaFrontEnd extends FSInterfacePOA {
             ErrorHandler res = new ErrorHandler(pair, id, city);
             res.start();
 
+            System.out.println("Results are ready for BA");
+
             try {
 
                 res.join();
 
                 f = res.readResult();
+
+                System.out.println(f);
+
 
             } catch (InterruptedException e) {
                 e.printStackTrace();
@@ -531,7 +542,7 @@ public class CorbaFrontEnd extends FSInterfacePOA {
 
             try {
 
-                pair.semaphore.acquire();
+                pair.semaphore.tryAcquire(30 , TimeUnit.SECONDS);
 
                 ArrayList<String> results = pair.entry.get(id);
 
@@ -545,46 +556,49 @@ public class CorbaFrontEnd extends FSInterfacePOA {
                     String p1 = results.get(1).split(",")[0];
                     String p2 = results.get(2).split(",")[0];
 
-                    if (p0.equals(p1)) {
+                    if (p0.length() < 5) {
 
-                        if (!p0.equals(p2)) {
+                        if (p0.equals(p1)) {
 
-                            int id = Integer.valueOf(results.get(2).split(",")[1]);
+                            if (!p0.equals(p2)) {
 
-                            reportError(id , city);
+                                int id = Integer.valueOf(results.get(2).split(",")[1]);
+
+                                reportError(id, city);
+
+                            }
+
+                            result = p0;
+
+
+                        } else if (p0.equals(p2)) {
+
+                            if (!p0.equals(p1)) {
+
+                                int id = Integer.valueOf(results.get(1).split(",")[1]);
+
+                                reportError(id, city);
+
+                            }
+
+                            result = p0;
+
+                        } else if (p1.equals(p2)) {
+
+                            if (!p1.equals(p0)) {
+
+                                int id = Integer.valueOf(results.get(0).split(",")[1]);
+
+                                reportError(id, city);
+
+                            }
+
+                            result = p1;
 
                         }
-
-                        result = p0;
-
-
                     }
-                    else if (p0.equals(p2)){
 
-                        if (!p0.equals(p1)) {
-
-                            int id = Integer.valueOf(results.get(1).split(",")[1]);
-
-                            reportError(id , city);
-
-                        }
-
-                        result = p0;
-
-                    }
-                    else if (p1.equals(p2)) {
-
-                        if (!p1.equals(p0)) {
-
-                            int id = Integer.valueOf(results.get(0).split(",")[1]);
-
-                            reportError(id , city);
-
-                        }
-
-                        result = p1;
-
-                    }
+                    result = p1;
                 }
 
 

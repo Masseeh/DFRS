@@ -16,7 +16,7 @@ import java.util.concurrent.ConcurrentHashMap;
 public class Sequencer {
 
     private ReliableServerSocket sequencerSocket;
-    private long sequenceNumber = 0;
+    private int[] sequenceNumber = new int[3];
 
     private ConcurrentHashMap<Integer,String> history;
 
@@ -29,9 +29,8 @@ public class Sequencer {
 
                 System.out.println("Waiting...");
                 ReliableSocket socket = (ReliableSocket)sequencerSocket.accept();
-                new Thread(new Handler(socket,sequenceNumber)).start();
-                System.out.println(sequenceNumber + " Connected...");
-                sequenceNumber++;
+                new Thread(new Handler(socket)).start();
+
 
             }
         } catch (IOException e) {
@@ -49,11 +48,9 @@ public class Sequencer {
     class Handler implements Runnable {
 
         private ReliableSocket socket;
-        private long seq;
 
-        public Handler(ReliableSocket socket, long seq) {
+        public Handler(ReliableSocket socket) {
             this.socket = socket;
-            this.seq = seq;
         }
 
         public void sendToReplica(int city, byte[] sendBuffer) {
@@ -122,6 +119,26 @@ public class Sequencer {
                 String[] tokenizer = msg.split(",");
 
                 int city = Integer.valueOf(tokenizer[0]);
+
+                int seq = 0;
+
+                synchronized (sequenceNumber) {
+
+                    switch (city) {
+                        case Protocol.MTL:
+                            seq = sequenceNumber[0];
+                            sequenceNumber[0]++;
+                            break;
+                        case Protocol.NDL:
+                            seq = sequenceNumber[1];
+                            sequenceNumber[1]++;
+                            break;
+                        case Protocol.WA:
+                            seq = sequenceNumber[2];
+                            sequenceNumber[2]++;
+                            break;
+                    }
+                }
 
                 int clientId = Integer.valueOf(tokenizer[2]);
 

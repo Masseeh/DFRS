@@ -40,7 +40,7 @@ public class FSServant extends ParentServant{
     actionLogger.setLevel(Level.ALL);
     FileHandler aFileHandler;
     try {
-      aFileHandler = new FileHandler(Protocol.RESOUCES + cityOrigin.toLowerCase() + ReplicaManager.ID
+      aFileHandler = new FileHandler(Protocol.RESOURCES + cityOrigin.toLowerCase() + ReplicaManager.ID
               + "/actions.log", true);
       aFileHandler.setFormatter(new SimpleFormatter());
       actionLogger.addHandler(aFileHandler);
@@ -51,7 +51,7 @@ public class FSServant extends ParentServant{
     generalLogger.setLevel(Level.ALL);
     FileHandler uFileHandler;
     try {
-      uFileHandler = new FileHandler(Protocol.RESOUCES + cityOrigin.toLowerCase() + ReplicaManager.ID
+      uFileHandler = new FileHandler(Protocol.RESOURCES + cityOrigin.toLowerCase() + ReplicaManager.ID
               + "/general.log", true);
       uFileHandler.setFormatter(new SimpleFormatter());
       generalLogger.addHandler(uFileHandler);
@@ -114,10 +114,10 @@ public class FSServant extends ParentServant{
 
       for (int i = 0; i < Status.NUMBER-1; i++) {
         result += res.get(i);
-        result += " - ";
+        result += " ";
       }
 
-      result += cityOrigin + " : " + flightCount(3);
+      result += cityOrigin + ": " + flightCount(3);
 
       dSocket.close();
 
@@ -432,11 +432,11 @@ public class FSServant extends ParentServant{
         trans = "montreal";
         port = Protocol.FIRST_REPLICA_PORT_MTL;
         break;
-      case "NDH" :
+      case "WST" :
         trans = "washington";
         port = Protocol.FIRST_REPLICA_PORT_WA;
         break;
-      case "WST" :
+      case "NDH" :
         port = Protocol.FIRST_REPLICA_PORT_NDL;
         trans = "new delhi";
         break;
@@ -484,7 +484,7 @@ public class FSServant extends ParentServant{
             DatagramPacket request = new DatagramPacket(buffer, buffer.length);
             dSocket.receive(request);
             Integer count = servant.flightCount(3);
-            String s = servant.cityOrigin + " : " + count;
+            String s = servant.cityOrigin + ": " + count;
             byte[] c = s.getBytes();
             DatagramPacket reply = new DatagramPacket(c, c.length, request.getAddress(), request.getPort());
             dSocket.send(reply);
